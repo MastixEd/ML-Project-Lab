@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ML Project Lab · Bring Your Own Dataset</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f8fc;--card:#fff;--ink:#14213d;--mute:#5b6784;--line:#dde3f0;--acc:#2f6fed;--ok:#1f9d55;--warn:#e0a100;--bad:#d64545}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1524;--card:#18203a;--ink:#eaf0ff;--mute:#9aa7c7;--line:#2a3558;--acc:#6b9bff;--ok:#3ecf85;--warn:#f0c33c;--bad:#ff6b6b}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.6rem;margin:.2em 0}h4{margin:14px 0 6px}
+.sub,small{color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.card.lock{opacity:.4;pointer-events:none}
+.h{display:flex;gap:10px;align-items:center;font-weight:700;font-size:1.1rem}
+.n{background:var(--acc);color:#fff;border-radius:50%;width:28px;height:28px;display:grid;place-items:center;font-size:.9rem;flex:none}
+.pixi{background:color-mix(in srgb,var(--acc) 12%,transparent);border-radius:10px;padding:8px 12px;margin:10px 0;font-size:.92rem}
+button,.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer;display:inline-block}
+button.alt{background:transparent;color:var(--acc);border:1px solid var(--acc)}
+button:disabled{opacity:.5}
+textarea,select{width:100%;max-width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+select{width:auto}textarea{height:70px;font:12px monospace;margin:8px 0}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.82rem}
+td,th{border-bottom:1px solid var(--line);padding:4px 8px;text-align:right;white-space:nowrap}th,td:first-child{text-align:left}th{color:var(--mute)}
+.na{color:var(--bad);font-weight:700}.ch{background:color-mix(in srgb,var(--warn) 30%,transparent);border-radius:4px;padding:0 3px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px;margin:10px 0}
+.stat{border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}.stat b{display:block;font-size:1.3rem}.stat span{color:var(--mute);font-size:.78rem}
+canvas{width:100%;height:170px;display:block}.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.bar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:.85rem}.bar i{display:block;height:12px;border-radius:4px;background:var(--acc)}.bar i.neg{background:var(--bad)}.bar .l{width:150px;flex:none;overflow:hidden;text-overflow:ellipsis}
+.cm{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px;max-width:380px;text-align:center;font-size:.82rem}.cm div{padding:9px;border-radius:8px;background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.cm .g{background:color-mix(in srgb,var(--ok) 25%,transparent);font-weight:700}.cm .r{background:color-mix(in srgb,var(--bad) 25%,transparent);font-weight:700}
+.chk{display:flex;flex-wrap:wrap;gap:6px 14px}.sl{display:grid;grid-template-columns:140px 1fr 70px;gap:8px;align-items:center;margin:7px 0;font-size:.9rem}input[type=range]{width:100%}
+.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:10px 0;font-size:.88rem}
+.vd{border-radius:12px;padding:14px;margin-top:12px;font-weight:700;text-align:center;border:2px solid var(--acc);background:color-mix(in srgb,var(--acc) 15%,transparent)}
+code{background:var(--bg);padding:1px 5px;border-radius:5px;font-size:.85em}
+</style></head><body><main>
+<h1>🧪 ML Project Lab</h1>
+<p class="sub">Load <b>any</b> CSV, pick what to predict, and watch every step of a machine-learning project: cleaning, preparing, training and testing. A sample dataset (air quality: “will tomorrow be unsafe for outdoor play?”) is loaded to start.</p>
+
+<section class="card" id="s1"><div class="h"><span class="n">1</span>Collect Data</div>
+<div class="pixi">🤖 Pixi: Upload a CSV file, paste CSV text, or use the sample. The first row must be column names. Your data stays in your browser.</div>
+<label class="btn">📁 Upload CSV<input type="file" id="fl" accept=".csv,.tsv,.txt" hidden></label> <button class="alt" id="sm">Load sample data</button> <button class="alt" id="pb">Use pasted text</button>
+<textarea id="ta" placeholder="…or paste CSV here"></textarea>
+<p id="st" role="status" style="font-weight:600;margin:6px 0"></p>
+<div id="pv"></div><div id="pf"></div><div id="cf"></div></section>
+
+<section class="card lock" id="s2"><div class="h"><span class="n">2</span>Clean &amp; Prepare Data</div>
+<div class="pixi">🤖 Pixi: Messy data makes a confused model. The pipeline runs 9 stages and logs every change it makes.</div>
+<p>Hide <b id="tv">20</b>% of rows for the final test: <input type="range" id="ts" min="10" max="40" value="20" style="width:160px;vertical-align:middle"> <button id="b2">Run cleaning pipeline</button></p><div id="o2"></div></section>
+
+<section class="card lock" id="s3"><div class="h"><span class="n">3</span>Train Your Model</div>
+<div class="pixi">🤖 Pixi: Logistic regression multiplies each feature by a weight, adds them up, and squeezes the total into a 0–1 probability. Training nudges the weights to reduce mistakes.</div>
+<div class="ctl"><label>Learning rate <b id="lv">0.3</b><input type="range" id="lr" min="0.01" max="1" step="0.01" value="0.3"></label><label>Epochs (rounds) <b id="ev">200</b><input type="range" id="ep" min="50" max="500" step="10" value="200"></label><label>Regularization (anti-overfit) <b id="rv">0.001</b><input type="range" id="l2" min="0" max="0.1" step="0.001" value="0.001"></label></div>
+<div id="wt0"></div><button id="b3">Train model</button><p id="lv2"></p>
+<div class="two"><div><small>Loss (lower is better)</small><canvas id="cv1"></canvas></div><div><small>Accuracy (higher is better)</small><canvas id="cv2"></canvas></div></div>
+<div id="wb"></div><div id="wt1"></div></section>
+
+<section class="card lock" id="s4"><div class="h"><span class="n">4</span>Test &amp; Evaluate</div>
+<div class="pixi">🤖 Pixi: Now the hidden rows the model has never seen. Move the threshold to trade false alarms against missed cases.</div>
+<button id="b4">Run the final test</button><div id="o4"></div></section>
+
+<section class="card lock" id="s5"><div class="h"><span class="n">5</span>Draw Conclusions &amp; Use It</div><div id="o5"></div>
+<div id="try" style="display:none"><h4>Try your model</h4><div id="sl"></div><div class="vd" id="vd"></div></div></section>
+<p><small>⚠️ Sample data is simulated for learning. Real decisions need real data, expert review, and fairness checks. Works for binary yes/no targets with numeric or text columns.</small></p>
+
+<script>
+const $=id=>document.getElementById(id),sig=z=>1/(1+Math.exp(-z)),cl=(x,a,b)=>Math.min(b,Math.max(a,x)),f2=x=>(+x).toFixed(2),f3=x=>(+x).toFixed(3);
+let seed=7;const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296},gauss=()=>Math.sqrt(-2*Math.log(rnd()+1e-9))*Math.cos(6.28318*rnd());
+let D=null,P=null;
+const st=(m,bad)=>{const e=$("st");e.style.color=bad?"var(--bad)":"var(--ok)";e.textContent=m},run=f=>{try{f()}catch(x){st("Could not read that data: "+x.message,1)}};
+const tbl=(h,rs)=>`<div class="tw"><table><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr>${rs.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`;
+const NA='<span class="na">?</span>';
+function parseCSV(t){t=t.replace(/\r/g,"").trim();const l0=t.split("\n")[0],d=[",",";","\t"].map(c=>[c,l0.split(c).length]).sort((a,b)=>b[1]-a[1])[0][0],rows=[];let r=[],c="",q=false;
+for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==d){r.push(c);c=""}else if(ch=="\n"){r.push(c);rows.push(r);r=[];c=""}else c+=ch}
+r.push(c);rows.push(r);const h=rows.shift().map(s=>s.trim());return{h,r:rows.filter(x=>x.length===h.length&&x.some(s=>s.trim()))}}
+function sample(){const L=["pm25,humidity,wind,temp,traffic,season,unsafe_tomorrow"],S=["Winter","Summer","Monsoon"];
+for(let i=0;i<600;i++){const s=S[Math.floor(rnd()*3)],pm=cl(Math.exp(gauss()*.6+4),8,300),hu=15+rnd()*80,wi=cl(Math.abs(gauss())*8+1,0,30),te=8+rnd()*34,tr=rnd()*10,
+nx=.7*pm+4*tr-3*wi+.25*hu+(s=="Winter"?15:s=="Monsoon"?-12:0)+gauss()*12,v=[pm,hu,wi,te,tr].map(x=>Math.round(x*10)/10),u=rnd();
+if(u<.06)v[Math.floor(rnd()*5)]="";else if(u<.075)v[0]=Math.round(v[0]*90)/10;else if(u<.09)v[2]=-99;
+L.push([...v,s,nx>70?1:0].join(","));if(rnd()<.02)L.push(L[L.length-1])}return L.join("\n")}
+function reset(){P=null;["s2","s3","s4","s5"].forEach(i=>$(i).classList.add("lock"));["o2","o4","o5","wt0","wt1","wb","lv2"].forEach(i=>$(i).innerHTML="");$("try").style.display="none";["b2","b3","b4"].forEach(i=>$(i).disabled=false);["cv1","cv2"].forEach(i=>{const c=$(i);c.getContext("2d").clearRect(0,0,c.width,c.height)})}
+function load(t){const d=parseCSV(t);if(d.h.length<2||d.r.length<30)return st("Need at least 2 columns and 30 data rows (found "+d.h.length+" columns, "+d.r.length+" rows).",1);D=d;reset();
+D.p=D.h.map((h,j)=>{const v=D.r.map(r=>r[j].trim()).filter(x=>x!==""),nu=v.filter(x=>!isNaN(+x)),num=v.length>0&&nu.length/v.length>=.9;return{h,num,miss:D.r.length-v.length,u:new Set(v).size,mn:num?Math.min(...nu.map(Number)):"",mx:num?Math.max(...nu.map(Number)):""}});
+$("pv").innerHTML="<h4>Raw data (first 6 rows)</h4>"+tbl(D.h,D.r.slice(0,6).map(r=>r.map(c=>c.trim()===""?NA:c)));
+$("pf").innerHTML=`<h4>Column profile · ${D.r.length} rows × ${D.h.length} columns</h4>`+tbl(["column","type","missing","unique","min","max"],D.p.map(p=>[p.h,p.num?"number":"text",p.miss,p.u,p.mn,p.mx]));
+$("cf").innerHTML=`<h4>Tell the model what to learn</h4><p><label>Target (what to predict): <select id="tg">${D.h.map(h=>`<option>${h}</option>`).join("")}</select></label> &nbsp; <label>Counts as “yes” when value is: <select id="ps"></select></label></p><p>Features (inputs):</p><div class="chk">${D.p.map((p,j)=>`<label><input type="checkbox" class="fc" value="${j}"> ${p.h}</label>`).join("")}</div><small>Text columns with more than 12 distinct values (like names or IDs) are unchecked by default.</small>`;
+$("tg").value=D.h[D.h.length-1];$("tg").onchange=tgt;tgt();$("s2").classList.remove("lock");st("✅ Loaded "+D.r.length+" rows × "+D.h.length+" columns. Choose the target below, then continue to step 2.")}
+function tgt(){const t=D.h.indexOf($("tg").value),vs=[...new Set(D.r.map(r=>r[t].trim()).filter(x=>x!==""))];
+$("ps").innerHTML=vs.slice(0,30).map(v=>`<option>${v}</option>`).join("");const g=vs.find(v=>["1","true","yes","y"].includes(v.toLowerCase()));if(g)$("ps").value=g;
+document.querySelectorAll(".fc").forEach(e=>{const j=+e.value,p=D.p[j];e.disabled=j===t;e.checked=j!==t&&(p.num||p.u<=12)});reset();$("s2").classList.remove("lock")}
+$("fl").onchange=e=>{const f=e.target.files[0];if(f)f.text().then(t=>run(()=>load(t)),()=>st("Could not read that file.",1));e.target.value=""};
+$("sm").onclick=()=>run(()=>{seed=7;load(sample());$("pv").scrollIntoView({behavior:"smooth"})});
+$("pb").onclick=()=>$("ta").value.trim()?run(()=>load($("ta").value)):st("Paste CSV text into the box first (first row = column names, at least 30 rows).",1);
+$("ts").oninput=e=>$("tv").textContent=e.target.value;[["lr","lv"],["ep","ev"],["l2","rv"]].forEach(([a,b])=>$(a).oninput=e=>$(b).textContent=e.target.value);
+
+$("b2").onclick=()=>{const t=D.h.indexOf($("tg").value),pos=$("ps").value,fc=[...document.querySelectorAll(".fc:checked")].map(e=>+e.value).filter(j=>j!==t);
+if(!fc.length)return st("Pick at least one feature in step 1.",1);const log=[];let rows=D.r.map(r=>r.map(s=>s.trim())),n0=rows.length;
+const seen=new Set();rows=rows.filter(r=>{const k=r.join("|");return seen.has(k)?false:(seen.add(k),true)});log.push(["1","Remove duplicate rows",n0-rows.length,"Identical rows would be counted twice and can leak into the test set."]);
+let a=rows.length;rows=rows.filter(r=>r[t]!=="");log.push(["2","Drop rows with no answer (target blank)",a-rows.length,"We cannot learn from a row with no right answer."]);
+const cols=fc.map(j=>({j,h:D.h[j],num:D.p[j].num})),before=rows.map(r=>r.slice());let sn=0;
+rows.forEach(r=>cols.forEach(c=>{if(c.num&&(r[c.j]==="-99"||r[c.j]==="-999")){r[c.j]="";sn++}}));log.push(["3","Sentinel codes (-99, -999) → missing",sn,"Sensors and forms often use fake numbers for “no reading”."]);
+let tm=0,to=0;
+cols.forEach(c=>{const v=rows.map(r=>r[c.j]).filter(x=>x!=="");c.miss=rows.length-v.length;tm+=c.miss;c.out=0;
+if(c.num){const x=v.map(Number).sort((p,q)=>p-q),q=p=>x[Math.floor(p*(x.length-1))],q1=q(.25),q3=q(.75),iq=q3-q1;c.fill=x[x.length>>1];c.lo=iq?q1-1.5*iq:-Infinity;c.hi=iq?q3+1.5*iq:Infinity;
+rows.forEach(r=>{if(r[c.j]!==""){const val=+r[c.j];if(val<c.lo||val>c.hi){r[c.j]=String(cl(val,c.lo,c.hi));c.out++}}});to+=c.out}
+else{const m={};v.forEach(x=>m[x]=(m[x]||0)+1);const s=Object.entries(m).sort((p,q)=>q[1]-p[1]);c.fill=s[0][0];c.levels=s.slice(0,12).map(x=>x[0])}});
+log.push(["4","Outliers clipped (IQR rule: beyond Q1−1.5·IQR or Q3+1.5·IQR)",to,"Extreme values are pulled back to the nearest sensible edge."]);
+log.push(["5","Fill missing values (median for numbers, most common for text)",tm,"Keeps the row instead of throwing away all its other information."]);
+rows.forEach(r=>cols.forEach(c=>{if(r[c.j]==="")r[c.j]=c.fill}));
+const objs=rows.map(r=>{const o={};cols.forEach(c=>o[c.h]=c.num?+r[c.j]:r[c.j]);return o}),ys=rows.map(r=>r[t]===pos?1:0),FL=[];
+cols.forEach(c=>{if(c.num){c.mn=Math.min(...objs.map(o=>o[c.h]));c.mx=Math.max(...objs.map(o=>o[c.h]));FL.push({name:c.h,col:c.h,level:null})}else c.levels.forEach(l=>FL.push({name:c.h+" = "+l,col:c.h,level:l}))});
+log.push(["6","One-hot encode text columns → 0/1 columns",FL.length-cols.filter(c=>c.num).length,"Models need numbers; each category gets its own yes/no column. Total inputs: "+FL.length]);
+log.push(["7",`Target → 1 if “${$("tg").value}” = “${pos}”, else 0`,ys.filter(y=>y).length+" ones","Share of positives: "+Math.round(100*ys.filter(y=>y).length/ys.length)+"%"]);
+const rv=o=>FL.map(f=>f.level===null?o[f.col]:(o[f.col]===f.level?1:0)),idx=objs.map((_,i)=>i);
+for(let i=idx.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}
+const cut=Math.round(idx.length*(1-$("ts").value/100)),all=idx.map(i=>({i,raw:rv(objs[i]),y:ys[i]})),tr=all.slice(0,cut),te=all.slice(cut);
+log.push(["8","Shuffle and split into train / test",tr.length+" / "+te.length,"The test rows are locked away until step 4."]);
+const nf=FL.length,mu=[],sd=[];for(let k=0;k<nf;k++){const v=tr.map(r=>r.raw[k]),m=v.reduce((s,x)=>s+x,0)/v.length;mu.push(m);sd.push(Math.sqrt(v.reduce((s,x)=>s+(x-m)**2,0)/v.length)||1)}
+all.forEach(r=>r.x=r.raw.map((v,k)=>(v-mu[k])/sd[k]));
+log.push(["9","Standardize: (value − mean) ÷ spread, using TRAIN rows only",nf+" columns","Puts every feature on one scale; using train-only stats prevents peeking at the test set."]);
+P={cols,FL,tr,te,mu,sd,pos,target:$("tg").value,objs};
+const ex=idx.slice(0).map((_,i)=>i).filter(i=>cols.some(c=>String(before[i][c.j])!==String(c.num?+objs[i][c.h]:objs[i][c.h])||before[i][c.j]==="")).slice(0,5),ch=(b,c)=>b===""?`${NA} → <span class="ch">${f2(c)}</span>`:(String(+b)!==String(+c)&&c!==b?`${b} → <span class="ch">${c}</span>`:c),
+ea=all.filter(r=>ex.includes(r.i));
+$("o2").innerHTML=`<h4>Pipeline log</h4>`+tbl(["#","stage","affected","why"],log.map(l=>l.map((x,i)=>i==3?`<small>${x}</small>`:x)))+
+`<h4>Per-column report</h4>`+tbl(["feature","type","missing filled with","outliers clipped","allowed range"],cols.map(c=>[c.h,c.num?"number":"text",c.miss?c.miss+" × "+(c.num?f2(c.fill):c.fill):"–",c.out,c.num&&isFinite(c.lo)?f2(c.lo)+" … "+f2(c.hi):c.num?"–":c.levels.length+" levels"]))+
+(ex.length?`<h4>Before → after, rows that needed fixing (original units)</h4>`+tbl(["row",...cols.map(c=>c.h)],ex.map(i=>["#"+(i+1),...cols.map(c=>ch(before[i][c.j],c.num?+objs[i][c.h]:objs[i][c.h]))]))+
+`<h4>Same rows after encoding + standardizing (what the model sees)</h4>`+tbl(["row",...FL.map(f=>f.name)],ea.map(r=>["#"+(r.i+1),...r.x.map(f2)])):"")+
+`<small>Check: train feature means ≈ 0 and spread ≈ 1 after scaling. Highlighted cells were changed by the pipeline.</small>`;
+$("b2").disabled=true;$("s3").classList.remove("lock");walk("wt0",Array(nf).fill(0),0,"Forward pass BEFORE training (all weights = 0, so the model just says 50%)")};
+
+function walk(el,w,b,title){const r=P.tr[0],z=r.x.reduce((s,v,i)=>s+v*w[i],b),p=sig(z);
+$(el).innerHTML=`<h4>${title}</h4><small>Example: training row #${r.i+1}, true answer = ${r.y}</small>`+tbl(["feature","value x","weight w","x · w"],P.FL.map((f,i)=>[f.name,f2(r.x[i]),f3(w[i]),f3(r.x[i]*w[i])]))+
+`<p><code>z = Σ(x·w) + bias = ${f3(z)}</code> → <code>p = 1 ÷ (1 + e<sup>−z</sup>) = ${f3(p)}</code> → predicts “${p>.5?"yes":"no"}” (${p>.5===!!r.y?"✓ correct":"✗ wrong"}). Loss for this row: <code>${f3(-Math.log(cl(r.y?p:1-p,1e-9,1)))}</code></p>`}
+function draw(id,s){const c=$(id),d=devicePixelRatio||1,W=c.clientWidth,H=c.clientHeight;c.width=W*d;c.height=H*d;const g=c.getContext("2d");g.scale(d,d);const all=[...s[0],...s[1]],mn=Math.min(...all),mx=Math.max(...all),n=P.E,col=getComputedStyle(document.body).color;
+g.strokeStyle=col;g.globalAlpha=.3;g.beginPath();g.moveTo(34,6);g.lineTo(34,H-18);g.lineTo(W-6,H-18);g.stroke();g.globalAlpha=1;g.fillStyle=col;g.font="11px sans-serif";g.fillText(f2(mx),0,12);g.fillText(f2(mn),0,H-20);g.fillText("epochs →",W-56,H-4);
+[[0,"#2f6fed","train"],[1,"#e0a100","test"]].forEach(([i,cc,l])=>{g.strokeStyle=cc;g.lineWidth=2;g.beginPath();s[i].forEach((v,j)=>{const x=34+(W-44)*j/Math.max(1,n-1),y=H-18-(H-30)*(v-mn)/((mx-mn)||1);j?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();g.fillStyle=cc;g.fillText("● "+l,i?100:50,12)})}
+const bars=(w,names)=>{const m=Math.max(...w.map(Math.abs),1e-9);return w.map((v,i)=>[names[i],v]).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).map(([n,v])=>`<div class="bar"><span class="l">${n}</span><i class="${v<0?"neg":""}" style="width:${Math.abs(v)/m*50}%"></i><small>${f2(v)}</small></div>`).join("")};
+
+$("b3").onclick=()=>{$("b3").disabled=true;const E=+$("ep").value,lr=+$("lr").value,l2=+$("l2").value,nf=P.FL.length,w=Array(nf).fill(0);let b=0,e=0;P.E=E;
+const fwd=x=>sig(x.reduce((s,v,i)=>s+v*w[i],b)),ev=S=>{let L=0,c=0;S.forEach(r=>{const p=cl(fwd(r.x),1e-9,1-1e-9);L-=r.y?Math.log(p):Math.log(1-p);if((p>.5)===!!r.y)c++});return[L/S.length,c/S.length]},H={l:[[],[]],a:[[],[]]},k=Math.max(1,Math.ceil(E/120));
+const step=()=>{for(let s=0;s<k&&e<E;s++,e++){const g=Array(nf).fill(0);let gb=0;P.tr.forEach(r=>{const d=fwd(r.x)-r.y;for(let i=0;i<nf;i++)g[i]+=d*r.x[i];gb+=d});const m=P.tr.length;for(let i=0;i<nf;i++)w[i]-=lr*(g[i]/m+l2*w[i]);b-=lr*gb/m;
+const A=ev(P.tr),B=ev(P.te);H.l[0].push(A[0]);H.l[1].push(B[0]);H.a[0].push(A[1]);H.a[1].push(B[1])}
+draw("cv1",H.l);draw("cv2",H.a);const j=e-1;$("lv2").innerHTML=`<b>Epoch ${e}/${E}</b> · loss train ${f3(H.l[0][j])} / test ${f3(H.l[1][j])} · accuracy train ${(H.a[0][j]*100).toFixed(1)}% / test ${(H.a[1][j]*100).toFixed(1)}%<br><small>Each epoch: <code>w ← w − lr · (average of (p − y)·x + λ·w)</code></small>`;
+$("wb").innerHTML="<h4>Weights being learned</h4>"+bars(w,P.FL.map(f=>f.name));
+if(e<E)requestAnimationFrame(step);else{P.w=w;P.b=b;P.H=H;walk("wt1",w,b,"Same forward pass AFTER training");$("s4").classList.remove("lock")}};step()};
+
+const pr=x=>sig(x.reduce((s,v,i)=>s+v*P.w[i],P.b));
+function auc(S){const s=S.map(r=>[pr(r.x),r.y]).sort((a,b)=>a[0]-b[0]);let rs=0,np=0;s.forEach((v,i)=>{if(v[1]){rs+=i+1;np++}});const nn=s.length-np;return np&&nn?(rs-np*(np+1)/2)/(np*nn):NaN}
+function evalT(){const th=+$("th").value;$("thv").textContent=th;let tp=0,fp=0,fn=0,tn=0;P.te.forEach(r=>{const p=pr(r.x)>=th?1:0;p&&r.y?tp++:p?fp++:r.y?fn++:tn++});
+const n=P.te.length,a=(tp+tn)/n,base=Math.max(tp+fn,fp+tn)/n,pre=tp/(tp+fp||1),rec=tp/(tp+fn||1),f1=2*pre*rec/(pre+rec||1),ta=P.tr.filter(r=>(pr(r.x)>=th?1:0)===r.y).length/P.tr.length,gap=ta-a;
+$("res").innerHTML=`<div class="stats"><div class="stat"><b>${(a*100).toFixed(1)}%</b><span>test accuracy</span></div><div class="stat"><b>${(base*100).toFixed(1)}%</b><span>baseline: always guess the majority</span></div><div class="stat"><b>${(pre*100).toFixed(0)}%</b><span>precision: “yes” calls that were right</span></div><div class="stat"><b>${(rec*100).toFixed(0)}%</b><span>recall: real “yes” cases caught</span></div><div class="stat"><b>${f2(f1)}</b><span>F1 score</span></div><div class="stat"><b>${f2(auc(P.te))}</b><span>AUC (0.5 = coin flip, 1 = perfect)</span></div></div>
+<div class="cm"><span></span><b>Predicted no</b><b>Predicted yes</b><b>Actually no</b><div class="g">${tn}</div><div>${fp}</div><b>Actually yes</b><div class="r">${fn}</div><div class="g">${tp}</div></div>
+<p><b>Overfitting check:</b> train accuracy ${(ta*100).toFixed(1)}% vs test ${(a*100).toFixed(1)}% → gap ${(gap*100).toFixed(1)} points. ${gap>.08?"⚠️ Large gap: the model may be memorizing. Try more data, fewer features, or higher regularization.":"✅ Small gap: the model generalizes."}</p>`;
+P.acc=a;P.base=base;P.rec=rec}
+$("b4").onclick=()=>{$("o4").innerHTML=`<p>Decision threshold: <b id="thv">0.5</b> <input type="range" id="th" min="0.1" max="0.9" step="0.05" value="0.5" style="width:200px;vertical-align:middle"></p><div id="res"></div><h4>Sample of unseen test rows</h4><div id="smp"></div>`;
+$("th").oninput=evalT;evalT();$("smp").innerHTML=tbl(["row","actual","model probability","prediction",""],P.te.slice(0,8).map(r=>{const p=pr(r.x),ok=(p>=.5?1:0)===r.y;return["#"+(r.i+1),r.y,f2(p),p>=.5?1:0,ok?"✓":'<span class="na">✗</span>']}));
+$("b4").disabled=true;$("s5").classList.remove("lock");conclude()};
+
+function conclude(){const gain=(P.acc-P.base)*100,top=P.FL.map((f,i)=>[f.name,P.w[i]]).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,3);
+$("o5").innerHTML=`<h4>What the model learned (bigger bar = stronger influence; red lowers the chance of “${P.pos}”)</h4>`+bars(P.w,P.FL.map(f=>f.name))+
+`<p><b>Conclusions:</b> Predicting <code>${P.target}</code> = “${P.pos}”, the model scores ${(P.acc*100).toFixed(1)}% on unseen data, ${gain>0?gain.toFixed(1)+" points better than":"no better than"} the baseline guess, and catches ${(P.rec*100).toFixed(0)}% of real “yes” cases. Strongest signals: ${top.map(t=>`<b>${t[0]}</b> (${t[1]>0?"raises":"lowers"} the chance)`).join(", ")}. Correlation is not cause: these are patterns in this dataset only.</p><p><b>Next steps:</b> gather more rows, try other models, or tune the threshold for the cost of a missed case.</p>`;
+$("sl").innerHTML=P.cols.map((c,i)=>c.num?`<div class="sl"><label for="r${i}">${c.h}</label><input type="range" id="r${i}" min="${c.mn}" max="${c.mx}" step="${(c.mx-c.mn)/100||1}" value="${c.fill}"><b id="v${i}"></b></div>`:`<div class="sl"><label for="r${i}">${c.h}</label><select id="r${i}">${c.levels.map(l=>`<option>${l}</option>`).join("")}</select><span></span></div>`).join("");
+$("try").style.display="block";P.cols.forEach((c,i)=>$("r"+i).oninput=upd);upd()}
+function upd(){const o={};P.cols.forEach((c,i)=>{const v=$("r"+i).value;o[c.h]=c.num?+v:v;if(c.num)$("v"+i).textContent=f2(v)});
+const x=P.FL.map((f,i)=>((f.level===null?o[f.col]:(o[f.col]===f.level?1:0))-P.mu[i])/P.sd[i]),p=pr(x);
+$("vd").innerHTML=`Chance that ${P.target} = “${P.pos}”: ${(p*100).toFixed(0)}%<div style="height:10px;border-radius:5px;background:var(--line);margin-top:8px"><div style="height:10px;border-radius:5px;background:var(--acc);width:${p*100}%"></div></div>`}
+seed=7;load(sample());
+</script></main></body></html>
